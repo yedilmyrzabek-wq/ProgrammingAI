@@ -1,0 +1,46 @@
+[
+  {
+    "method": "Baseline",
+    "precision": 0.14122262177182085,
+    "recall": 0.32653061224489793,
+    "f1": 0.1971702418986764,
+    "seconds": 0.1328272000009747,
+    "peak_traced_mib": 5.205539703369141,
+    "scored_hours": 12509,
+    "flagged_hours": 1323,
+    "predicted_anomalies": 3059
+  },
+  {
+    "method": "Z-score",
+    "precision": 0.20236220472440944,
+    "recall": 0.1942554799697657,
+    "f1": 0.1982259930582337,
+    "seconds": 0.11327429999982996,
+    "peak_traced_mib": 5.175188064575195,
+    "scored_hours": 12509,
+    "flagged_hours": 1323,
+    "predicted_anomalies": 1270
+  },
+  {
+    "method": "Rolling IQR",
+    "precision": 0.11799526440410418,
+    "recall": 0.22600151171579744,
+    "f1": 0.1550427793621986,
+    "seconds": 0.27683909999905154,
+    "peak_traced_mib": 7.013465881347656,
+    "scored_hours": 12509,
+    "flagged_hours": 1323,
+    "predicted_anomalies": 2534
+  },
+  {
+    "method": "Isolation Forest",
+    "precision": 0.30952380952380953,
+    "recall": 0.0982615268329554,
+    "f1": 0.1491681009753299,
+    "seconds": 5.0361561000008805,
+    "peak_traced_mib": 6.5933942794799805,
+    "scored_hours": 12509,
+    "flagged_hours": 1323,
+    "predicted_anomalies": 420
+  }
+]
