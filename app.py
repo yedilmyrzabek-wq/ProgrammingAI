@@ -169,7 +169,7 @@ def anomalies_tab(wide, units, well, parameter, method, period, show_flags):
         (f"{int((anomalies & flagged).sum()):,}", "anomalies that are also flagged", False),
     ])
     st.plotly_chart(series_chart(frame, parameter, units.get(parameter, ""), anomalies, show_flags),
-                    use_container_width=True, config={"displaylogo": False})
+                    width="stretch", config={"displaylogo": False})
     if not scored.any():
         st.caption("The selected period ends before the test split, so no hours were scored.")
         return
@@ -180,7 +180,7 @@ def anomalies_tab(wide, units, well, parameter, method, period, show_flags):
         st.caption(f"{method} found no anomalies for this parameter in the scored hours.")
     else:
         st.dataframe(rounded(rows.sort_values("timestamp", ascending=False)), hide_index=True,
-                     use_container_width=True,
+                     width="stretch",
                      column_config={"timestamp": st.column_config.DatetimeColumn(format="YYYY-MM-DD HH:mm")})
 
 
@@ -209,9 +209,9 @@ def comparison_tab():
         f"**{best_precision['method']}** is the most precise ({best_precision['precision']:.3f}), "
         f"and **{fastest['method']}** is the fastest ({fastest['seconds']:.2f} s)."
     )
-    st.plotly_chart(comparison_chart(comparison), use_container_width=True, config={"displaylogo": False})
+    st.plotly_chart(comparison_chart(comparison), width="stretch", config={"displaylogo": False})
     table = comparison[["method", "precision", "recall", "f1", "seconds", "peak_traced_mib", "predicted_anomalies"]]
-    st.dataframe(table, hide_index=True, use_container_width=True, column_config={
+    st.dataframe(table, hide_index=True, width="stretch", column_config={
         "precision": st.column_config.NumberColumn(format="%.3f"),
         "recall": st.column_config.NumberColumn(format="%.3f"),
         "f1": st.column_config.NumberColumn("F1", format="%.3f"),
@@ -246,34 +246,34 @@ def quality_tab():
     left, right = st.columns(2, gap="large")
     with left:
         st.subheader("Missing hours by well")
-        st.plotly_chart(missing_chart(tables["Missing hours by well"]), use_container_width=True,
+        st.plotly_chart(missing_chart(tables["Missing hours by well"]), width="stretch",
                         config={"displaylogo": False})
     with right:
         st.subheader("Longest gaps")
-        st.dataframe(tables["Hourly gaps"].head(10), hide_index=True, use_container_width=True)
+        st.dataframe(tables["Hourly gaps"].head(10), hide_index=True, width="stretch")
     left, right = st.columns(2, gap="large")
     with left:
         st.subheader(shift_key)
-        st.dataframe(rounded(tables[shift_key], 1), hide_index=True, use_container_width=True,
+        st.dataframe(rounded(tables[shift_key], 1), hide_index=True, width="stretch",
                      column_config={"ratio": st.column_config.NumberColumn("ratio, ×", format="%.1f")})
     with right:
         st.subheader(regime_key)
-        st.dataframe(rounded(tables[regime_key]), hide_index=True, use_container_width=True)
+        st.dataframe(rounded(tables[regime_key]), hide_index=True, width="stretch")
     st.subheader("Quality flags by well")
-    st.dataframe(tables["Flag rates by well"], hide_index=True, use_container_width=True)
+    st.dataframe(tables["Flag rates by well"], hide_index=True, width="stretch")
 
 
 def exploration_tab():
     tables, figures = exploration()
     st.subheader("Descriptive statistics (flagged readings removed)")
-    st.dataframe(tables["Descriptive statistics"].round(2), hide_index=True, use_container_width=True)
+    st.dataframe(tables["Descriptive statistics"].round(2), hide_index=True, width="stretch")
     images = [path for path in figures if path.suffix == ".png"]
     for left_path, right_path in zip(images[::2], images[1::2]):
         left, right = st.columns(2, gap="large")
-        left.image(str(left_path), use_container_width=True)
-        right.image(str(right_path), use_container_width=True)
+        left.image(str(left_path), width="stretch")
+        right.image(str(right_path), width="stretch")
     if len(images) % 2:
-        st.image(str(images[-1]), use_container_width=True)
+        st.image(str(images[-1]), width="stretch")
 
 
 def main():
