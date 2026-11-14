@@ -35,8 +35,12 @@ streamlit run app.py
 
 Run `python main.py` and select **Compare anomaly detectors** to regenerate the
 [comparison table](reports/comparison.csv) and [chart](reports/figures/comparison.png).
-The menu also lets you prepare Parquet and SQLite, audit data quality, and run
-the saved SQL queries.
+The menu also lets you prepare Parquet and SQLite, audit data quality, run
+the saved SQL queries, and generate exploratory figures. Select **Inspect
+detected anomalies** to choose a well and a detector and list test timestamps
+that the detector marks as anomalous. Baseline, Z-score, and Rolling IQR also
+prompt for a sensor.
+The Isolation Forest view shows the quality flag for the entire well-hour.
 
 The comparison uses the dataset's chronological split. The baseline uses each
 well's 1st and 99th training percentiles, and Z-score uses a three-standard-deviation
