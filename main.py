@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from src import config, data_loader, database, evaluation, quality
+from src.detectors import METHODS, predict
 
 
 def prepare_data():
@@ -53,18 +54,13 @@ def run_comparison():
 
 def run_sql():
     names = list(database.load_queries())
-    for index, name in enumerate(names, start=1):
-        print(f"{index}. {name}")
-    choice = input("Query number (0 to return): ").strip()
-    if choice == "0":
+    name = select_option("Query number", names)
+    if name is None:
         return
-    number = int(choice)
-    if not 1 <= number <= len(names):
-        raise ValueError("Choose a query number from the list.")
     if not config.DB_PATH.exists():
         ensure_database(data_loader.load_long())
     with closing(database.connect()) as conn:
-        print_table(database.run_query(names[number - 1], conn))
+        print_table(database.run_query(name, conn))
 
 
 def run_eda():
@@ -79,6 +75,40 @@ def run_eda():
         print(path)
 
 
+def select_option(label, options):
+    for index, option in enumerate(options, start=1):
+        print(f"{index}. {option}")
+    number = int(input(f"{label} (0 to return): ").strip())
+    if not 0 <= number <= len(options):
+        raise ValueError("Choose a number from the list.")
+    return options[number - 1] if number else None
+
+
+def inspect_anomalies():
+    wide = data_loader.load_wide()
+    wells = sorted(wide["well_id"].dropna().unique())
+    well_id = select_option("Well number", wells)
+    if well_id is None:
+        return
+    method = select_option("Detector number", METHODS)
+    if method is None:
+        return
+    well = wide.loc[wide["well_id"].eq(well_id)]
+    predictions = predict(well, method)
+    if method == "Isolation Forest":
+        columns = ["timestamp", "any_flag"]
+        anomalies = predictions["anomaly"]
+    else:
+        sensors = [name for name in predictions if well[name].notna().any()]
+        sensor = select_option("Sensor number", sensors)
+        if sensor is None:
+            return
+        columns = ["timestamp", sensor, f"flag_{sensor}"]
+        anomalies = predictions[sensor]
+    print(f"\n{well_id} | {method} | {int(anomalies.sum()):,} anomalies")
+    print_table(well.loc[anomalies.index[anomalies.fillna(False)], columns])
+
+
 def main():
     actions = {
         "1": ("Prepare datasets and SQLite", prepare_data),
@@ -86,6 +116,7 @@ def main():
         "3": ("Compare anomaly detectors", run_comparison),
         "4": ("Run a saved SQL query", run_sql),
         "5": ("Explore sensor data and generate figures", run_eda),
+        "6": ("Inspect detected anomalies", inspect_anomalies),
     }
     while True:
         try:
