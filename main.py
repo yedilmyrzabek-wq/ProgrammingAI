@@ -67,12 +67,25 @@ def run_sql():
         print_table(database.run_query(names[number - 1], conn))
 
 
+def run_eda():
+    from src import eda
+
+    tables, figures = eda.run_eda(data_loader.load_wide())
+    for title, frame in tables.items():
+        print(f"\n{title}")
+        print_table(frame)
+    print("\nSaved figures:")
+    for path in figures:
+        print(path)
+
+
 def main():
     actions = {
         "1": ("Prepare datasets and SQLite", prepare_data),
         "2": ("Audit data quality", run_audit),
         "3": ("Compare anomaly detectors", run_comparison),
         "4": ("Run a saved SQL query", run_sql),
+        "5": ("Explore sensor data and generate figures", run_eda),
     }
     while True:
         try:
