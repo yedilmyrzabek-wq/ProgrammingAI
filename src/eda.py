@@ -64,7 +64,7 @@ def correlations(wide):
 def _save(fig, name):
     config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     path = config.FIGURES_DIR / name
-    fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(path, dpi=150, bbox_inches="tight", facecolor="#f7f6f2")
     plt.close(fig)
     return path
 
