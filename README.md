@@ -117,16 +117,20 @@ The Isolation Forest view shows the quality flag for the entire well-hour.
 
 The comparison uses the dataset's chronological split. The baseline uses each
 well's 1st and 99th training percentiles, and Z-score uses a three-standard-deviation
-threshold fitted on train. Rolling IQR uses the preceding 48 hours, excluding
-the current reading. Isolation Forest fits separately for each well with 2%
-contamination and uses training medians to fill missing sensor values.
+threshold fitted on train. Rolling IQR uses the preceding 48 hours and requires
+at least 12 observed values for the sensor. Its window excludes the current
+reading and can use earlier test readings as they become available. Isolation
+Forest fits separately for each well with 2% contamination and uses training
+medians to fill missing sensor values.
 
 All four methods were scored on 12,509 test well-hours, 1,323 of which had at least
-one quality flag. Z-score had the highest F1 (0.198), close to the baseline
+one quality flag. The three per-sensor detectors count an hour as anomalous if
+any sensor was marked anomalous. Isolation Forest scores the whole well-hour.
+Z-score had the highest F1 (0.198), close to the baseline
 (0.197). Isolation Forest had the highest precision (0.310) and the lowest recall
 (0.098). These scores measure agreement with incomplete quality flags. Runtime
-includes fitting and prediction. Peak traced MiB covers allocations tracked by
-`tracemalloc` during that run.
+includes fitting and prediction with `tracemalloc` enabled. Peak traced MiB
+reports the peak allocations tracked during that run.
 
 In the quality audit, the median of unflagged dynamometer area readings rose
 14–20 times from April to May across the seven pump wells. At NK-7, median SPM
