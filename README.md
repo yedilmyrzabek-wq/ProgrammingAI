@@ -141,4 +141,4 @@ fell from 4.16 to 1.40 after the June cutoff, while the median rod weights rose.
 | Member | Contribution |
 | --- | --- |
 | Yedil Myrzabek | Data loading and Parquet, SQLite and SQL queries, ER diagram, EDA, Streamlit dashboard |
-| Shyntassov Abdurahmans | Resource measurement, anomaly detectors, method comparison, data quality audit, console menu |
+| Shyntassov Abdurahman | Resource measurement, anomaly detectors, method comparison, data quality audit, console menu |

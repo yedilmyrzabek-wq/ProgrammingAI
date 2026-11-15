@@ -299,6 +299,8 @@ def main():
         unsafe_allow_html=True,
     )
     well, parameter, method, period, show_flags = sidebar_filters(wide)
+    st.sidebar.divider()
+    st.sidebar.caption("Project 22 · Yedil Myrzabek and Shyntassov Abdurahman")
     tabs = st.tabs(["Anomalies", "Method comparison", "Data quality", "Exploration"])
     with tabs[0]:
         anomalies_tab(wide, units_by_parameter(long_df), well, parameter, method, period, show_flags)
