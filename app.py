@@ -5,37 +5,43 @@ import streamlit as st
 from src import config, data_loader, database, eda, evaluation, quality
 from src.detectors import METHODS, predict
 
-INK = "#1b2430"
-MUTED = "#8a8f98"
-ACCENT = "#1d4b63"
-ANOMALY = "#c2410c"
-FLAG = "#8a6d3b"
-GRID = "#e4e1d8"
-PAPER = "#f7f6f2"
-METRIC_COLORS = {"precision": "#1d4b63", "recall": "#6f9bb3", "f1": "#1b2430"}
+INK = "#e6e6e6"
+MUTED = "#6e6e6e"
+SPLIT = "#9a9a9a"
+ACCENT = "#ffcc00"
+FLAG = "#e5533d"
+GRID = "#333333"
+PAPER = "#222222"
+FONT = "Roboto, sans-serif"
+METRIC_COLORS = {"precision": "#ffcc00", "recall": "#8c8c8c", "f1": "#e6e6e6"}
 
 CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&family=Roboto:wght@400;500;700&display=swap');
 html, body, [class*="css"], .stMarkdown, .stText, button, input, textarea, select {
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-family: 'Roboto', system-ui, sans-serif;
 }
-h1, h2, h3 { letter-spacing: -0.01em; font-weight: 600; }
-h1 { font-size: 1.75rem !important; padding-bottom: 0.1rem !important; }
-h2, h3 { font-size: 1.15rem !important; padding-top: 0.6rem !important; }
-.block-container { padding-top: 2.2rem; max-width: 1280px; }
-::selection { background: #cfe0ea; color: #1b2430; }
-:focus-visible { outline: 2px solid #1d4b63 !important; outline-offset: 2px; }
+[data-testid="stHeader"] { background: #1a1a1a; border-bottom: 1px solid #333; }
+[data-testid="stSidebar"] { background: #1a1a1a; border-right: 1px solid #333; }
+[data-testid="stSidebar"] h2 { color: #ffcc00 !important; }
+h1 { font-size: 1.9rem !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.02em;
+     padding-bottom: 0.1rem !important; }
+h2, h3 { font-size: 0.95rem !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.08em;
+         color: #bdbdbd !important; padding-top: 0.8rem !important; }
+.block-container { padding-top: 2.4rem; max-width: 1280px; }
+::selection { background: #ffcc00; color: #1a1a1a; }
+:focus-visible { outline: 2px solid #ffcc00 !important; outline-offset: 2px; }
 [data-testid="stDataFrame"], .num { font-variant-numeric: tabular-nums; }
-.subtitle { color: #5b6270; margin: 0 0 1.4rem 0; font-size: 0.95rem; }
-.statline { display: flex; flex-wrap: wrap; gap: 0.4rem 2.2rem; margin: 0.2rem 0 0.6rem 0; }
-.stat { display: flex; flex-direction: column; }
-.stat b { font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 1.35rem; color: #1b2430; }
-.stat span { color: #5b6270; font-size: 0.8rem; }
-.stat.hot b { color: #c2410c; }
-.note { color: #5b6270; font-size: 0.85rem; }
-.legend { display: inline-flex; gap: 1.2rem; color: #5b6270; font-size: 0.82rem; }
-.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 0.35rem; vertical-align: 1px; }
+[data-testid="stTab"] p { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.82rem; font-weight: 500; }
+.subtitle { color: #9a9a9a; margin: 0 0 1.6rem 0; font-size: 0.95rem; }
+.statline { display: flex; flex-wrap: wrap; background: #2b2b2b; border: 1px solid #3a3a3a; margin: 0.4rem 0 0.8rem 0; }
+.stat { display: flex; flex-direction: column; flex: 1 1 0; min-width: 9rem; padding: 0.75rem 1.1rem;
+        border-right: 1px solid #444; }
+.stat:last-child { border-right: none; }
+.stat b { font-family: 'Roboto Mono', monospace; font-weight: 500; font-size: 1.4rem; color: #e6e6e6; }
+.stat span { color: #9a9a9a; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat.hot b { color: #ffcc00; }
+.note { color: #9a9a9a; font-size: 0.85rem; }
 </style>
 """
 
@@ -79,7 +85,8 @@ def exploration():
 
 
 def rounded(frame, digits=2):
-    return frame.round(digits)
+    floats = frame.select_dtypes("float32").columns
+    return frame.astype({column: "float64" for column in floats}).round(digits)
 
 
 def units_by_parameter(long_df):
@@ -128,7 +135,7 @@ def series_chart(frame, parameter, unit, anomalies, show_flags):
     flagged = frame[f"flag_{parameter}"].astype(bool)
     test_start = frame.loc[frame["split"].eq("test"), "timestamp"].min()
     fig = go.Figure()
-    for split, color, width in (("train", MUTED, 1.1), ("test", INK, 1.3)):
+    for split, color, width in (("train", MUTED, 1.1), ("test", INK, 1.2)):
         part = frame.loc[frame["split"].eq(split)]
         fig.add_scatter(x=part["timestamp"], y=part[parameter], mode="lines", name=f"{split} readings",
                         line={"color": color, "width": width}, connectgaps=False)
@@ -137,15 +144,15 @@ def series_chart(frame, parameter, unit, anomalies, show_flags):
                         name="quality flag", marker={"color": "rgba(0,0,0,0)", "size": 9,
                                                      "line": {"color": FLAG, "width": 1.6}})
     fig.add_scatter(x=frame.loc[anomalies, "timestamp"], y=frame.loc[anomalies, parameter], mode="markers",
-                    name="detected anomaly", marker={"color": ANOMALY, "size": 6})
+                    name="detected anomaly", marker={"color": ACCENT, "size": 6})
     if pd.notna(test_start):
-        fig.add_vrect(x0=test_start, x1=frame["timestamp"].max(), fillcolor=ACCENT, opacity=0.04, line_width=0)
-        fig.add_vline(x=test_start, line={"color": ACCENT, "dash": "dot", "width": 1})
-        fig.add_annotation(x=test_start, y=1, yref="paper", text="test split", showarrow=False,
-                           xanchor="left", xshift=6, font={"color": ACCENT, "size": 12})
+        fig.add_vrect(x0=test_start, x1=frame["timestamp"].max(), fillcolor="#ffffff", opacity=0.03, line_width=0)
+        fig.add_vline(x=test_start, line={"color": SPLIT, "dash": "dot", "width": 1})
+        fig.add_annotation(x=test_start, y=1, yref="paper", text="TEST SPLIT", showarrow=False,
+                           xanchor="left", xshift=6, font={"color": SPLIT, "size": 12})
     fig.update_layout(
         height=430, margin={"l": 10, "r": 10, "t": 20, "b": 10}, paper_bgcolor=PAPER, plot_bgcolor=PAPER,
-        font={"family": "IBM Plex Sans, sans-serif", "color": INK, "size": 13}, hovermode="x unified",
+        font={"family": FONT, "color": INK, "size": 13}, hovermode="x unified",
         legend={"orientation": "h", "y": -0.12, "x": 0}, yaxis_title=f"{parameter.replace('_', ' ')}, {unit}",
     )
     fig.update_xaxes(gridcolor=GRID, zeroline=False)
@@ -166,7 +173,7 @@ def anomalies_tab(wide, units, well, parameter, method, period, show_flags):
         (f"{int(scored.sum()):,}", "hours scored (test split)", False),
         (f"{int(anomalies.sum()):,}", f"anomalies · {method}", True),
         (f"{int((flagged & scored).sum()):,}", "flagged in scored hours", False),
-        (f"{int((anomalies & flagged).sum()):,}", "anomalies that are also flagged", False),
+        (f"{int((anomalies & flagged).sum()):,}", "anomalies also flagged", False),
     ])
     st.plotly_chart(series_chart(frame, parameter, units.get(parameter, ""), anomalies, show_flags),
                     width="stretch", config={"displaylogo": False})
@@ -191,7 +198,7 @@ def comparison_chart(comparison):
                     marker_color=color, text=comparison[metric].round(2), textposition="outside")
     fig.update_layout(
         barmode="group", height=380, margin={"l": 10, "r": 10, "t": 20, "b": 10}, paper_bgcolor=PAPER,
-        plot_bgcolor=PAPER, font={"family": "IBM Plex Sans, sans-serif", "color": INK, "size": 13},
+        plot_bgcolor=PAPER, font={"family": FONT, "color": INK, "size": 13},
         yaxis={"range": [0, min(1, comparison[list(METRIC_COLORS)].max().max() * 1.3)], "gridcolor": GRID,
                "title": "score vs. quality flags"},
         legend={"orientation": "h", "y": -0.15, "x": 0},
@@ -233,7 +240,7 @@ def missing_chart(missing):
                            text=ordered["missing_pct"].map("{:.1f}%".format), textposition="outside"))
     fig.update_layout(
         height=340, margin={"l": 10, "r": 30, "t": 10, "b": 10}, paper_bgcolor=PAPER, plot_bgcolor=PAPER,
-        font={"family": "IBM Plex Sans, sans-serif", "color": INK, "size": 13},
+        font={"family": FONT, "color": INK, "size": 13},
         xaxis={"title": "missing hours, %", "gridcolor": GRID, "range": [0, ordered["missing_pct"].max() * 1.2]},
     )
     return fig

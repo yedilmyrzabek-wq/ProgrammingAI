@@ -10,7 +10,17 @@ import seaborn as sns
 from src import config
 
 PARAMS_BY_TYPE = {"fountain": config.FOUNTAIN_PARAMS, "sucker_rod_pump": config.PUMP_PARAMS}
-PALETTE = "#1f4e79"
+PALETTE = "#ffcc00"
+BACKGROUND = "#222222"
+SERIES_COLORS = ["#ffcc00", "#e6e6e6", "#e5533d", "#7fb3d5", "#9ccc65", "#b39ddb", "#ffab70", "#8c8c8c"]
+DARK_STYLE = {
+    "figure.facecolor": BACKGROUND, "axes.facecolor": BACKGROUND, "savefig.facecolor": BACKGROUND,
+    "axes.edgecolor": "#444444", "axes.labelcolor": "#bdbdbd", "text.color": "#e6e6e6",
+    "xtick.color": "#bdbdbd", "ytick.color": "#bdbdbd", "grid.color": "#333333",
+    "legend.facecolor": "#2b2b2b", "legend.edgecolor": "#444444",
+    "axes.prop_cycle": matplotlib.cycler(color=SERIES_COLORS),
+}
+plt.rcParams.update(DARK_STYLE)
 
 
 def clean_values(wide):
@@ -64,7 +74,7 @@ def correlations(wide):
 def _save(fig, name):
     config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     path = config.FIGURES_DIR / name
-    fig.savefig(path, dpi=150, bbox_inches="tight", facecolor="#f7f6f2")
+    fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     return path
 
@@ -73,7 +83,7 @@ def plot_daily_pattern(profiles):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
     for ax, (well_type, hourly) in zip(axes, profiles.items()):
         hourly.plot(ax=ax, linewidth=1.8)
-        ax.axhline(1, color="grey", linewidth=0.8, linestyle="--")
+        ax.axhline(1, color="#6e6e6e", linewidth=0.8, linestyle="--")
         ax.set_title(well_type.replace("_", " ").title())
         ax.set_xlabel("Hour of day")
         ax.legend(fontsize=8)
@@ -96,8 +106,8 @@ def plot_boxplots(wide):
     wide = wide.assign(well_id=wide["well_id"].astype(str))
     pumps = wide.loc[wide["well_type"].eq("sucker_rod_pump")]
     fountains = wide.loc[wide["well_type"].eq("fountain")]
-    sns.boxplot(data=pumps, x="well_id", y="pump_fillage", color=PALETTE, fliersize=1.5, ax=axes[0])
-    sns.boxplot(data=fountains, x="well_id", y="tubing_pressure", color=PALETTE, fliersize=1.5, ax=axes[1])
+    sns.boxplot(data=pumps, x="well_id", y="pump_fillage", color=PALETTE, linecolor="#e6e6e6", fliersize=1.5, ax=axes[0])
+    sns.boxplot(data=fountains, x="well_id", y="tubing_pressure", color=PALETTE, linecolor="#e6e6e6", fliersize=1.5, ax=axes[1])
     axes[0].set_title("Pump fillage, %")
     axes[1].set_title("Tubing pressure, atm")
     for ax in axes:
@@ -117,7 +127,7 @@ def plot_area_shift(wide):
     )
     fig, ax = plt.subplots(figsize=(10, 4.5))
     monthly.plot(ax=ax, marker="o", linewidth=1.5)
-    ax.axvline(pd.Timestamp(f"{config.AREA_SHIFT_MONTH}-01"), color="crimson", linestyle="--", linewidth=1)
+    ax.axvline(pd.Timestamp(f"{config.AREA_SHIFT_MONTH}-01"), color="#e5533d", linestyle="--", linewidth=1)
     ax.set_yscale("log")
     ax.set_title("Dynamometer area: monthly median jumps in May 2026")
     ax.set_xlabel("")
@@ -129,10 +139,12 @@ def plot_area_shift(wide):
 def plot_interactive_series(wide, well_id="NK-68", parameter="pump_fillage"):
     series = wide.loc[wide["well_id"].eq(well_id), ["timestamp", parameter, f"flag_{parameter}"]]
     series = series.rename(columns={f"flag_{parameter}": "flagged"})
-    fig = px.line(series, x="timestamp", y=parameter, title=f"{well_id}: {parameter}")
+    fig = px.line(series, x="timestamp", y=parameter, title=f"{well_id}: {parameter}", template="plotly_dark",
+                  color_discrete_sequence=["#e6e6e6"])
+    fig.update_layout(paper_bgcolor=BACKGROUND, plot_bgcolor=BACKGROUND)
     flagged = series.loc[series["flagged"].astype(bool)]
     fig.add_scatter(x=flagged["timestamp"], y=flagged[parameter], mode="markers",
-                    marker={"color": "crimson", "size": 6}, name="quality flag")
+                    marker={"color": "#e5533d", "size": 6}, name="quality flag")
     config.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     path = config.FIGURES_DIR / "timeseries_interactive.html"
     fig.write_html(path, include_plotlyjs="cdn")
